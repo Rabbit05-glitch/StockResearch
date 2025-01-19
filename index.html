@@ -104,15 +104,9 @@
                 var longOmegaBody = $('#longOmegaTable tbody');
                 var shortOmegaBody = $('#shortOmegaTable tbody');
 
-                // Check and destroy the DataTable if already initialized
+                // Check if DataTable exists already and destroy it before re-initializing
                 if ($.fn.DataTable.isDataTable(tableId)) {
                     $(tableId).DataTable().clear().destroy();
-                }
-                if ($.fn.DataTable.isDataTable('#longOmegaTable')) {
-                    $('#longOmegaTable').DataTable().clear().destroy();
-                }
-                if ($.fn.DataTable.isDataTable('#shortOmegaTable')) {
-                    $('#shortOmegaTable').DataTable().clear().destroy();
                 }
 
                 tableBody.empty();
@@ -153,8 +147,6 @@
 
                     // Initialize DataTables after appending data
                     $(tableId).DataTable({ pageLength: 15 });
-                    $('#longOmegaTable').DataTable({ pageLength: 15 });
-                    $('#shortOmegaTable').DataTable({ pageLength: 15 });
                 }
             });
         }
