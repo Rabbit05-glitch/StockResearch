@@ -104,15 +104,6 @@
                 var longOmegaBody = $('#longOmegaTable tbody');
                 var shortOmegaBody = $('#shortOmegaTable tbody');
 
-                // Check if DataTable exists already and destroy it before re-initializing
-                if ($.fn.DataTable.isDataTable(tableId)) {
-                    $(tableId).DataTable().clear().destroy();
-                }
-
-                tableBody.empty();
-                longOmegaBody.empty();
-                shortOmegaBody.empty();
-
                 if (parsedData.length > 0) {
                     var headers = Object.keys(parsedData[0]);
                     var headerRow = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
@@ -136,16 +127,20 @@
                         });
                         tableRow += '</tr>';
 
-                        if (row['Long or Short'] === 'LONG OMEGA') {
+                        // Ensure we are matching 'Long or Short' values properly
+                        if (row['Long or Short'] && row['Long or Short'].toUpperCase() === 'LONG OMEGA') {
                             longOmegaBody.append(tableRow);
-                        } else if (row['Long or Short'] === 'SHORT OMEGA') {
+                        } else if (row['Long or Short'] && row['Long or Short'].toUpperCase() === 'SHORT OMEGA') {
                             shortOmegaBody.append(tableRow);
                         } else {
-                            tableBody.append(tableRow);
+                            tableBody.append(tableRow); // For other rows (if any)
                         }
                     });
 
-                    // Initialize DataTables after appending data
+                    // Reinitialize DataTables after the data is populated
+                    if ($(tableId).hasClass('dataTable')) {
+                        $(tableId).DataTable().destroy(); // Destroy existing DataTable
+                    }
                     $(tableId).DataTable({ pageLength: 15 });
                 }
             });
