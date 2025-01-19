@@ -36,21 +36,20 @@
             border-radius: 4px;
             border: 1px solid #ccc;
         }
-        .trade-percentage {
-            display: flex;
-            justify-content: space-around;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-        .trade-card {
-            background-color: #2c3e50;
-            color: white;
-            border-radius: 8px;
-            padding: 15px;
-            width: 150px;
-            text-align: center;
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
         }
-        .trade-card.success { background-color: #27ae60; }
-        .trade-card.danger { background-color: #e74c3c; }
+        th { background-color: #2c3e50; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .long { background-color: #27ae60; color: white; }
+        .short { background-color: #e74c3c; color: white; }
         .data-table { margin-top: 30px; }
         .table-title { font-size: 24px; margin-bottom: 10px; }
     </style>
@@ -58,24 +57,9 @@
 <body>
     <div class="container">
         <h1>Stock Market Data</h1>
-
-        <!-- Analytics Section for Long and Short Omega Percentages -->
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search Data..." onkeyup="filterData()">
         </div>
-
-        <!-- Display Percentage of Long and Short Omega Trades -->
-        <div class="trade-percentage">
-            <div class="trade-card success">
-                <h5>Long Trades</h5>
-                <p id="long-trades-percentage">0%</p>
-            </div>
-            <div class="trade-card danger">
-                <h5>Short Trades</h5>
-                <p id="short-trades-percentage">0%</p>
-            </div>
-        </div>
-
         <div class="data-table">
             <h2 class="table-title">Tradebook</h2>
             <table id="tradebookTable">
@@ -102,15 +86,11 @@
             </table>
         </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
-        var omegaLongCount = 0;
-        var omegaShortCount = 0;
-
         $(document).ready(function() {
             loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/Tradebook.csv', '#tradebookTable');
             loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/StockMarketHistory.csv', '#stockmarketTable');
@@ -123,8 +103,6 @@
                 var tableHeader = $(tableId + ' thead');
                 var longOmegaBody = $('#longOmegaTable tbody');
                 var shortOmegaBody = $('#shortOmegaTable tbody');
-                omegaLongCount = 0;
-                omegaShortCount = 0;
 
                 if (parsedData.length > 0) {
                     var headers = Object.keys(parsedData[0]);
@@ -137,10 +115,8 @@
                             var value = row[header] || 'N/A'; // Replace undefined with N/A
                             if (header.toLowerCase() === 'long or short') {
                                 if (value.toUpperCase() === 'LONG OMEGA') {
-                                    omegaLongCount++;
                                     tableRow += `<td class="long">${value}</td>`;
                                 } else if (value.toUpperCase() === 'SHORT OMEGA') {
-                                    omegaShortCount++;
                                     tableRow += `<td class="short">${value}</td>`;
                                 } else {
                                     tableRow += `<td>${value}</td>`;
@@ -151,7 +127,7 @@
                         });
                         tableRow += '</tr>';
 
-                        // Add rows to respective tables
+                        // Ensure we are matching 'Long or Short' values properly
                         if (row['Long or Short'] && row['Long or Short'].toUpperCase() === 'LONG OMEGA') {
                             longOmegaBody.append(tableRow);
                         } else if (row['Long or Short'] && row['Long or Short'].toUpperCase() === 'SHORT OMEGA') {
@@ -161,24 +137,13 @@
                         }
                     });
 
-                    // Update the percentages for Omega Long and Omega Short
-                    updateTradePercentages();
+                    // Reinitialize DataTables after the data is populated
+                    if ($(tableId).hasClass('dataTable')) {
+                        $(tableId).DataTable().destroy(); // Destroy existing DataTable
+                    }
                     $(tableId).DataTable({ pageLength: 15 });
-                    $('#longOmegaTable').DataTable({ pageLength: 15 });
-                    $('#shortOmegaTable').DataTable({ pageLength: 15 });
                 }
             });
-        }
-
-        function updateTradePercentages() {
-            var totalOmega = omegaLongCount + omegaShortCount;
-            if (totalOmega > 0) {
-                var longPercentage = (omegaLongCount / totalOmega) * 100;
-                var shortPercentage = (omegaShortCount / totalOmega) * 100;
-
-                $('#long-trades-percentage').text(longPercentage.toFixed(2) + '%');
-                $('#short-trades-percentage').text(shortPercentage.toFixed(2) + '%');
-            }
         }
 
         function filterData() {
