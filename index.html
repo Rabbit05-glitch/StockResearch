@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Market Data 3</title>
+    <title>Stock Market Data 4</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
@@ -122,47 +122,58 @@
     <script>
         $(document).ready(function() {
             // Load CSV data for Tradebook and StockMarketHistory from GitHub repository
+            console.log("Starting to load CSV files...");
             loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/Tradebook.csv', '#tradebookTable');
             loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/StockMarketHistory.csv', '#stockmarketTable');
         });
 
         // Load data from CSV and populate table dynamically
         function loadCSVData(file, tableId) {
-            $.get(file, function(data) {
-                var parsedData = Papa.parse(data, { header: true }).data;
+            console.log(`Attempting to load CSV file: ${file}`);
+            $.get(file)
+                .done(function(data) {
+                    console.log(`Successfully loaded data from: ${file}`);
+                    var parsedData = Papa.parse(data, { header: true }).data;
 
-                var tableBody = $(tableId + ' tbody');
-                var tableHeader = $(tableId + ' thead');
+                    var tableBody = $(tableId + ' tbody');
+                    var tableHeader = $(tableId + ' thead');
 
-                if (parsedData.length > 0) {
-                    // Dynamically generate table headers based on CSV columns
-                    var headers = Object.keys(parsedData[0]);
-                    var headerRow = '<tr>';
-                    headers.forEach(function(header) {
-                        headerRow += `<th>${header}</th>`;
-                    });
-                    headerRow += '</tr>';
-                    tableHeader.html(headerRow);
+                    if (parsedData.length > 0) {
+                        console.log(`Parsing ${parsedData.length} rows of data from CSV...`);
 
-                    // Populate the table rows with CSV data
-                    parsedData.forEach(function(row) {
-                        var tableRow = '<tr>';
+                        // Dynamically generate table headers based on CSV columns
+                        var headers = Object.keys(parsedData[0]);
+                        var headerRow = '<tr>';
                         headers.forEach(function(header) {
-                            var value = row[header];
-                            if (header.toLowerCase() === 'long or short' && value && value.toLowerCase().includes('long')) {
-                                tableRow += `<td class="long">${value}</td>`;
-                            } else if (header.toLowerCase() === 'long or short' && value && value.toLowerCase().includes('short')) {
-                                tableRow += `<td class="short">${value}</td>`;
-                            } else {
-                                tableRow += `<td>${value}</td>`;
-                            }
+                            headerRow += `<th>${header}</th>`;
                         });
-                        tableRow += '</tr>';
-                        tableBody.append(tableRow);
-                    });
-                    $(tableId).DataTable(); // Initialize DataTable for sorting, searching, etc.
-                }
-            });
+                        headerRow += '</tr>';
+                        tableHeader.html(headerRow);
+
+                        // Populate the table rows with CSV data
+                        parsedData.forEach(function(row) {
+                            var tableRow = '<tr>';
+                            headers.forEach(function(header) {
+                                var value = row[header];
+                                if (header.toLowerCase() === 'long or short' && value && value.toLowerCase().includes('long')) {
+                                    tableRow += `<td class="long">${value}</td>`;
+                                } else if (header.toLowerCase() === 'long or short' && value && value.toLowerCase().includes('short')) {
+                                    tableRow += `<td class="short">${value}</td>`;
+                                } else {
+                                    tableRow += `<td>${value}</td>`;
+                                }
+                            });
+                            tableRow += '</tr>';
+                            tableBody.append(tableRow);
+                        });
+                        $(tableId).DataTable(); // Initialize DataTable for sorting, searching, etc.
+                    } else {
+                        console.log(`No data found in CSV from: ${file}`);
+                    }
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error(`Failed to load CSV from ${file}. Error: ${textStatus} - ${errorThrown}`);
+                });
         }
 
         // Filter data from both tables based on search input
