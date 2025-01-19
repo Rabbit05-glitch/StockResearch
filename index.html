@@ -123,8 +123,6 @@
                 var tableHeader = $(tableId + ' thead');
                 var longOmegaBody = $('#longOmegaTable tbody');
                 var shortOmegaBody = $('#shortOmegaTable tbody');
-
-                // Count Long and Short Omega trades
                 omegaLongCount = 0;
                 omegaShortCount = 0;
 
@@ -166,6 +164,8 @@
                     // Update the percentages for Omega Long and Omega Short
                     updateTradePercentages();
                     $(tableId).DataTable({ pageLength: 15 });
+                    $('#longOmegaTable').DataTable({ pageLength: 15 });
+                    $('#shortOmegaTable').DataTable({ pageLength: 15 });
                 }
             });
         }
