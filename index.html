@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Market Data 4</title>
+    <title>Stock Market Data</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -14,7 +15,6 @@
             padding: 0;
             background-color: #f1f1f1;
         }
-
         .container {
             max-width: 1200px;
             margin: 20px auto;
@@ -23,18 +23,12 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
+        h1 { text-align: center; color: #333; }
         .search-bar {
             margin: 20px 0;
             display: flex;
             justify-content: center;
         }
-
         .search-bar input {
             width: 50%;
             padding: 10px;
@@ -42,154 +36,117 @@
             border-radius: 4px;
             border: 1px solid #ccc;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-
         th, td {
             padding: 10px;
             text-align: left;
             border: 1px solid #ddd;
         }
-
-        th {
-            background-color: #2c3e50;
-            color: white;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .long {
-            background-color: #27ae60; /* Green for Long */
-            color: white;
-        }
-
-        .short {
-            background-color: #e74c3c; /* Red for Short */
-            color: white;
-        }
-
-        .data-table {
-            margin-top: 30px;
-        }
-
-        .table-title {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
+        th { background-color: #2c3e50; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .long { background-color: #27ae60; color: white; }
+        .short { background-color: #e74c3c; color: white; }
+        .data-table { margin-top: 30px; }
+        .table-title { font-size: 24px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Stock Market Data</h1>
-
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search Data..." onkeyup="filterData()">
         </div>
-
         <div class="data-table">
             <h2 class="table-title">Tradebook</h2>
             <table id="tradebookTable">
-                <thead>
-                    <!-- Dynamic table headers will be injected here -->
-                </thead>
-                <tbody>
-                    <!-- Data will be loaded here using JS -->
-                </tbody>
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+            
+            <h2 class="table-title">LONG OMEGA</h2>
+            <table id="longOmegaTable">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+            
+            <h2 class="table-title">SHORT OMEGA</h2>
+            <table id="shortOmegaTable">
+                <thead></thead>
+                <tbody></tbody>
             </table>
 
-            <h2 class="table-title">StockMarketHistory</h2>
-            <table id="stockmarketTable">
-                <thead>
-                    <!-- Dynamic table headers will be injected here -->
-                </thead>
-                <tbody>
-                    <!-- Data will be loaded here using JS -->
-                </tbody>
+            <h2 class="table-title">Stock Market History</h2>
+            <table id="stockmarketTable" class="display responsive nowrap">
+                <thead></thead>
+                <tbody></tbody>
             </table>
         </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-
     <script>
         $(document).ready(function() {
-            // Load CSV data for Tradebook and StockMarketHistory from GitHub repository
-            console.log("Starting to load CSV files...");
             loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/Tradebook.csv', '#tradebookTable');
             loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/StockMarketHistory.csv', '#stockmarketTable');
         });
 
-        // Load data from CSV and populate table dynamically
         function loadCSVData(file, tableId) {
-            console.log(`Attempting to load CSV file: ${file}`);
-            $.get(file)
-                .done(function(data) {
-                    console.log(`Successfully loaded data from: ${file}`);
-                    var parsedData = Papa.parse(data, { header: true }).data;
+            $.get(file).done(function(data) {
+                var parsedData = Papa.parse(data, { header: true }).data;
+                var tableBody = $(tableId + ' tbody');
+                var tableHeader = $(tableId + ' thead');
+                var longOmegaBody = $('#longOmegaTable tbody');
+                var shortOmegaBody = $('#shortOmegaTable tbody');
 
-                    var tableBody = $(tableId + ' tbody');
-                    var tableHeader = $(tableId + ' thead');
+                if (parsedData.length > 0) {
+                    var headers = Object.keys(parsedData[0]);
+                    var headerRow = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+                    tableHeader.html(headerRow);
 
-                    if (parsedData.length > 0) {
-                        console.log(`Parsing ${parsedData.length} rows of data from CSV...`);
-
-                        // Dynamically generate table headers based on CSV columns
-                        var headers = Object.keys(parsedData[0]);
-                        var headerRow = '<tr>';
-                        headers.forEach(function(header) {
-                            headerRow += `<th>${header}</th>`;
-                        });
-                        headerRow += '</tr>';
-                        tableHeader.html(headerRow);
-
-                        // Populate the table rows with CSV data
-                        parsedData.forEach(function(row) {
-                            var tableRow = '<tr>';
-                            headers.forEach(function(header) {
-                                var value = row[header];
-                                if (header.toLowerCase() === 'long or short' && value && value.toLowerCase().includes('long')) {
+                    parsedData.forEach(row => {
+                        var tableRow = '<tr>';
+                        headers.forEach(header => {
+                            var value = row[header] || 'N/A'; // Replace undefined with N/A
+                            if (header.toLowerCase() === 'long or short') {
+                                if (value.toUpperCase() === 'LONG OMEGA') {
                                     tableRow += `<td class="long">${value}</td>`;
-                                } else if (header.toLowerCase() === 'long or short' && value && value.toLowerCase().includes('short')) {
+                                } else if (value.toUpperCase() === 'SHORT OMEGA') {
                                     tableRow += `<td class="short">${value}</td>`;
                                 } else {
                                     tableRow += `<td>${value}</td>`;
                                 }
-                            });
-                            tableRow += '</tr>';
-                            tableBody.append(tableRow);
+                            } else {
+                                tableRow += `<td>${value}</td>`;
+                            }
                         });
-                        $(tableId).DataTable(); // Initialize DataTable for sorting, searching, etc.
-                    } else {
-                        console.log(`No data found in CSV from: ${file}`);
-                    }
-                })
-                .fail(function(jqXHR, textStatus, errorThrown) {
-                    console.error(`Failed to load CSV from ${file}. Error: ${textStatus} - ${errorThrown}`);
-                });
+                        tableRow += '</tr>';
+
+                        if (row['Long or Short'] === 'LONG OMEGA') {
+                            longOmegaBody.append(tableRow);
+                        } else if (row['Long or Short'] === 'SHORT OMEGA') {
+                            shortOmegaBody.append(tableRow);
+                        } else {
+                            tableBody.append(tableRow);
+                        }
+                    });
+
+                    $(tableId).DataTable({ pageLength: 15 });
+                    $('#longOmegaTable').DataTable({ pageLength: 15 });
+                    $('#shortOmegaTable').DataTable({ pageLength: 15 });
+                }
+            });
         }
 
-        // Filter data from both tables based on search input
         function filterData() {
-            var input = document.getElementById('searchInput').value.toLowerCase();
-            var tables = [$('#tradebookTable'), $('#stockmarketTable')];
-            
-            tables.forEach(function(table) {
-                table.find('tbody tr').each(function() {
-                    var rowText = $(this).text().toLowerCase();
-                    if (rowText.indexOf(input) === -1) {
-                        $(this).hide();
-                    } else {
-                        $(this).show();
-                    }
-                });
+            var input = $('#searchInput').val().toLowerCase();
+            $('table tbody tr').each(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(input) !== -1);
             });
         }
     </script>
