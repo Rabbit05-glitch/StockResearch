@@ -104,6 +104,21 @@
                 var longOmegaBody = $('#longOmegaTable tbody');
                 var shortOmegaBody = $('#shortOmegaTable tbody');
 
+                // Check and destroy the DataTable if already initialized
+                if ($.fn.DataTable.isDataTable(tableId)) {
+                    $(tableId).DataTable().clear().destroy();
+                }
+                if ($.fn.DataTable.isDataTable('#longOmegaTable')) {
+                    $('#longOmegaTable').DataTable().clear().destroy();
+                }
+                if ($.fn.DataTable.isDataTable('#shortOmegaTable')) {
+                    $('#shortOmegaTable').DataTable().clear().destroy();
+                }
+
+                tableBody.empty();
+                longOmegaBody.empty();
+                shortOmegaBody.empty();
+
                 if (parsedData.length > 0) {
                     var headers = Object.keys(parsedData[0]);
                     var headerRow = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
@@ -136,6 +151,7 @@
                         }
                     });
 
+                    // Initialize DataTables after appending data
                     $(tableId).DataTable({ pageLength: 15 });
                     $('#longOmegaTable').DataTable({ pageLength: 15 });
                     $('#shortOmegaTable').DataTable({ pageLength: 15 });
