@@ -1,154 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Market Data</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f1f1f1;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h1 { text-align: center; color: #333; }
-        .search-bar {
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-        }
-        .search-bar input {
-            width: 50%;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
-        th { background-color: #2c3e50; color: white; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .long { background-color: #27ae60; color: white; }
-        .short { background-color: #e74c3c; color: white; }
-        .data-table { margin-top: 30px; }
-        .table-title { font-size: 24px; margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Stock Market Data</h1>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search Data..." onkeyup="filterData()">
-        </div>
-        <div class="data-table">
-            <h2 class="table-title">Tradebook</h2>
-            <table id="tradebookTable">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
-            
-            <h2 class="table-title">LONG OMEGA</h2>
-            <table id="longOmegaTable">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
-            
-            <h2 class="table-title">SHORT OMEGA</h2>
-            <table id="shortOmegaTable">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
+function loadCSVData(file, tableId) {
+    $.get(file).done(function(data) {
+        var parsedData = Papa.parse(data, { header: true }).data;
+        var tableBody = $(tableId + ' tbody');
+        var tableHeader = $(tableId + ' thead');
+        var longOmegaBody = $('#longOmegaTable tbody');
+        var shortOmegaBody = $('#shortOmegaTable tbody');
 
-            <h2 class="table-title">Stock Market History</h2>
-            <table id="stockmarketTable" class="display responsive nowrap">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/Tradebook.csv', '#tradebookTable');
-            loadCSVData('https://raw.githubusercontent.com/Rabbit05-glitch/StockResearch/main/CSV/StockMarketHistory.csv', '#stockmarketTable');
-        });
+        if ($.fn.DataTable.isDataTable(tableId)) {
+            $(tableId).DataTable().destroy(); // Destroy existing DataTable
+            $(tableId + ' tbody').empty(); // Clear existing table body
+        }
 
-        function loadCSVData(file, tableId) {
-            $.get(file).done(function(data) {
-                var parsedData = Papa.parse(data, { header: true }).data;
-                var tableBody = $(tableId + ' tbody');
-                var tableHeader = $(tableId + ' thead');
-                var longOmegaBody = $('#longOmegaTable tbody');
-                var shortOmegaBody = $('#shortOmegaTable tbody');
+        if (tableId === '#longOmegaTable' && $.fn.DataTable.isDataTable('#longOmegaTable')) {
+            $('#longOmegaTable').DataTable().destroy();
+            $('#longOmegaTable tbody').empty();
+        }
 
-                if (parsedData.length > 0) {
-                    var headers = Object.keys(parsedData[0]);
-                    var headerRow = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
-                    tableHeader.html(headerRow);
+        if (tableId === '#shortOmegaTable' && $.fn.DataTable.isDataTable('#shortOmegaTable')) {
+            $('#shortOmegaTable').DataTable().destroy();
+            $('#shortOmegaTable tbody').empty();
+        }
 
-                    parsedData.forEach(row => {
-                        var tableRow = '<tr>';
-                        headers.forEach(header => {
-                            var value = row[header] || 'N/A'; // Replace undefined with N/A
-                            if (header.toLowerCase() === 'long or short') {
-                                if (value.toUpperCase() === 'LONG OMEGA') {
-                                    tableRow += `<td class="long">${value}</td>`;
-                                } else if (value.toUpperCase() === 'SHORT OMEGA') {
-                                    tableRow += `<td class="short">${value}</td>`;
-                                } else {
-                                    tableRow += `<td>${value}</td>`;
-                                }
-                            } else {
-                                tableRow += `<td>${value}</td>`;
-                            }
-                        });
-                        tableRow += '</tr>';
+        if (parsedData.length > 0) {
+            var headers = Object.keys(parsedData[0]);
+            var headerRow = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            tableHeader.html(headerRow);
 
-                        if (row['Long or Short'] === 'LONG OMEGA') {
-                            longOmegaBody.append(tableRow);
-                        } else if (row['Long or Short'] === 'SHORT OMEGA') {
-                            shortOmegaBody.append(tableRow);
+            parsedData.forEach(row => {
+                var tableRow = '<tr>';
+                headers.forEach(header => {
+                    var value = row[header] || 'N/A'; // Replace undefined with N/A
+                    if (header.toLowerCase() === 'long or short') {
+                        if (value.toUpperCase() === 'LONG OMEGA') {
+                            tableRow += `<td class="long">${value}</td>`;
+                        } else if (value.toUpperCase() === 'SHORT OMEGA') {
+                            tableRow += `<td class="short">${value}</td>`;
                         } else {
-                            tableBody.append(tableRow);
+                            tableRow += `<td>${value}</td>`;
                         }
-                    });
+                    } else {
+                        tableRow += `<td>${value}</td>`;
+                    }
+                });
+                tableRow += '</tr>';
 
-                    $(tableId).DataTable({ pageLength: 15 });
-                    $('#longOmegaTable').DataTable({ pageLength: 15 });
-                    $('#shortOmegaTable').DataTable({ pageLength: 15 });
+                if (row['Long or Short'] === 'LONG OMEGA') {
+                    longOmegaBody.append(tableRow);
+                } else if (row['Long or Short'] === 'SHORT OMEGA') {
+                    shortOmegaBody.append(tableRow);
+                } else {
+                    tableBody.append(tableRow);
                 }
             });
-        }
 
-        function filterData() {
-            var input = $('#searchInput').val().toLowerCase();
-            $('table tbody tr').each(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(input) !== -1);
-            });
+            // Initialize DataTables
+            $(tableId).DataTable({ pageLength: 15 });
+            if (tableId === '#longOmegaTable') {
+                $('#longOmegaTable').DataTable({ pageLength: 15 });
+            }
+            if (tableId === '#shortOmegaTable') {
+                $('#shortOmegaTable').DataTable({ pageLength: 15 });
+            }
         }
-    </script>
-</body>
-</html>
+    });
+}
